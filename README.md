@@ -1,4 +1,4 @@
-# zoover-frontend
+# zoover-test-solution
 
 This is my project a [Zoover](https://zoover.nl) code test.
 
