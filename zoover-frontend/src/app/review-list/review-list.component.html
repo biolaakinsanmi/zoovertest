@@ -1,0 +1,162 @@
+
+<!--statistics-->
+<div class="container">
+  <div class="row">
+    <div class="information-box">
+      <div class="information-item information-left">
+          <span class="stat">{{totalreviews? totalreviews : '--'}}</span>
+          <span>Total Reviews</span>
+      </div>
+      <div class="information-item information-middle">
+          <span class="stat">{{averageTraveledWith? averageTraveledWith: '--'}}</span>
+          <span>Avg. Travel With</span>
+      </div>
+      <div class="information-item information-right">
+          <span class="stat">{{generalAverage? generalAverage : '--'}}</span>
+          <span>Avg. General</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Filters-->
+<section class="row justify-content-center columns mx-0">
+  <div class="btn-toolbar mb-2" role="toolbar" aria-label="Filter Toolbar with button groups">
+    <div class="btn-group" role="group" aria-label="Filter tool">
+      <button type="button" class="btn btn-secondary" [disabled]='true'>Filter</button>
+
+      <button type="button" class="btn btn-sm {{ !filterKey? 'btn-primary' : 'btn-secondary'}}" (click)="doFilter(null)">
+        None
+      </button>
+
+      <button type="button" class="btn bt-sm {{ filterKey === key.key? 'btn-primary' : 'btn-secondary'}}" *ngFor="let key of traveledWithKeys" (click)="doFilter(key.key)">
+        {{key.key}}
+      </button>
+    </div>
+  </div>
+</section>
+
+<!--SORTS-->
+<section class="row justify-content-center columns mx-0">
+  <div class="btn-toolbar mb-2" role="toolbar" aria-label="Sort Toolbar with button groups">
+    <div class="btn-group" role="group" aria-label="Sort tool">
+      <button type="button" class="btn btn-secondary" [disabled]='true'>SORT</button>
+      <button type="button" class="btn btn-primary {{ sort === 'entryDate'? 'btn-primary' : 'btn-secondary'}}" (click)="sortData('entryDate')">
+        Entry Date
+      </button>
+      <button type="button" class="btn btn-primary {{ sort === 'travelDate'? 'btn-primary' : 'btn-secondary'}}" (click)="sortData('travelDate')">
+        Travel Date
+      </button>
+      <button type="button" class="btn btn-primary {{ dir === 'asc'? 'btn-primary' : 'btn-secondary'}}" (click)="sortDirection('asc')">
+        ASC
+      </button>
+      <button type="button" class="btn btn-primary {{ dir === 'desc'? 'btn-primary' : 'btn-secondary'}}" (click)="sortDirection('desc')">
+        DESC
+      </button>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<!--comments-->
+<div class="container">
+
+    <!--NO FETCHED RESULT WARNING-->
+    <div class="alerts danger" *ngIf="noFetchedResult">
+        Sorry! No review fetched.
+    </div>
+
+    <!--NO FILTER RESULT WARNING-->
+    <div class="alerts warning" *ngIf="noFilterResultWarning">
+      No review with this filter found.
+      <a href="javascript: void(0);" (click)="filterKey=''">Clear filter</a>
+    </div>
+
+
+  <div class="media g-mb-30 media-comment" *ngFor="let review of fetchedReviews; let i = index;">
+    <img class="d-flex g-width-70 g-height-70 rounded-circle g-mt-3 g-mr-15" src="https://i.pravatar.cc/300?{{getRandomeDigits()}}" alt="Image Description">
+    <div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">
+      <div class="g-mb-15">
+        <h5 class="h5 g-color-gray-dark-v1 mb-0">{{review?.titles[review.locale] }}</h5>
+
+        <ul class="list-inline d-sm-flex mt-1 mb-2">
+          <li class="list-inline-item g-mr-20">
+            <a class="u-link-v5 g-color-gray-dark-v4 g-color-primary--hover" href="#!">
+              <i class="fa fa-thumbs-up g-pos-rel g-top-1 g-mr-3"></i>
+                <b><i>{{review?.user}}</i></b> on {{review?.entryDate | date}}
+            </a>
+          </li>
+          <!--<li class="list-inline-item g-mr-20">
+            <a class="u-link-v5 g-color-gray-dark-v4 g-color-primary--hover" href="#!">
+              <i class="fa fa-thumbs-down g-pos-rel g-top-1 g-mr-3"></i>
+              &nbsp;
+            </a>
+          </li>-->
+          <li class="list-inline-item ml-auto">
+            <a class="u-link-v5 g-color-gray-dark-v4 g-color-primary--hover" href="#!">
+              <i class="fa fa-reply g-pos-rel g-top-1 g-mr-3"></i>
+              Traveled with: {{review?.traveledWith}} on {{review?.travelDate | date}}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <p>
+        {{review?.texts[review.locale] }}
+      </p>
+
+
+      <!--ratings-->
+      <div class="g-mb-15 mt-2 mb-3">
+        Ratings:
+        <button type="button" class="btn btn-primary btn-sm mr-1 disabled">
+          General <span class="badge badge-light">{{review?.ratings?.general?.general | number: '1.1-1'}}</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm mr-1 disabled">
+          Average Aspects <span class="badge badge-light">{{review?.aspectRatingAvg | number: '1.1-1'}}</span>
+        </button>
+        <div>
+          <span class="badge badge-pill badge-light" *ngFor="let aspect of getAspectReviews(review.ratings.aspects)">
+            {{aspect.key}}: {{aspect.val}}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--footer pagination-->
+<section class="row justify-content-center columns mx-0">
+  <ngb-pagination
+    [(page)]="page"
+    [pageSize]="pageSize"
+    [collectionSize]="queryTotalReviews"
+    (pageChange)="pageEvent($event)"
+    [boundaryLinks]="true"
+    [maxSize]="5"
+    [rotate]="true"
+    ></ngb-pagination>
+</section>
+
+
+
+<!--notice and loader-->
+
+<!--LOADER WHILE FECTING REVIEWS-->
+<div class="loading-wrapper">
+  <div class="loading animated fadeIn" *ngIf="isProcessing === true">
+    Please wait...
+    <div class="loadingbg"></div>
+  </div>
+</div>
+
+<!--NOTICE WHEN FECTING REVIEWS FAILS-->
+<div class="note_box sticktotop" *ngIf="isProcessing === null">
+  <h3>Sorry!</h3>
+  <p>
+    Fetch reviews failed. <br />Please check your internet connection or try reloading the page.
+    If issue still persist, contact administrator.
+  </p>
+</div>
+
